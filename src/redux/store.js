@@ -3,7 +3,7 @@ import createSagaMiddleware from 'redux-saga'
 import rootReducer from './reducers'
 import rootSaga from './sagas'
 
-import { createRouterMiddleware, ReduxRouterState } from '@lagunovsky/redux-react-router'
+import { createRouterMiddleware } from '@lagunovsky/redux-react-router'
 import { browserHistory } from './reducers'
 
 
