@@ -1,4 +1,4 @@
-import { takeEvery, put, call, fork, all, spawn, select } from 'redux-saga/effects'
+import { takeEvery, put, call, select } from 'redux-saga/effects'
 import { ROUTER_ON_LOCATION_CHANGED } from '@lagunovsky/redux-react-router'
 
 import {
