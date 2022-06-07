@@ -1,10 +1,16 @@
-import { combineReducers } from 'redux';
-import news from "./news";
-import errors from "./errors";
+import { combineReducers } from 'redux'
+import news from './news'
+import errors from './errors'
+import { createRouterReducer } from '@lagunovsky/redux-react-router'
+import { createBrowserHistory } from 'history'
 
-const reducer = combineReducers({
+export const browserHistory = createBrowserHistory()
+
+const rootReducer = combineReducers( {
   news,
   errors,
-});
+  router: createRouterReducer( browserHistory ),
 
-export default reducer;
+} )
+
+export default rootReducer
