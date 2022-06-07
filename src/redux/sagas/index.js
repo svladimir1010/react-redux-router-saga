@@ -1,11 +1,10 @@
-import { takeEvery, put, call, fork, all, spawn } from 'redux-saga/effects'
+import { takeEvery, put, call, fork, all, spawn, select } from 'redux-saga/effects'
+import { ROUTER_ON_LOCATION_CHANGED } from '@lagunovsky/redux-react-router'
+
 import {
-  GET_LATEST_NEWS,
-  GET_POPULAR_NEWS,
-  SET_LATEST_NEWS_ERROR,
-  SET_POPULAR_NEWS_ERROR,
+  SET_LOADING_DATA,
 } from '../constants'
-import { setLatestNews, setLatestNewsError, setPopularNews } from '../actions/actionCreator'
+import { setLatestNews, setLatestNewsError, setPopularNews, setPopularNewsError } from '../actions/actionCreator'
 import { getLatestNews, getPopularNews } from '../../api/index'
 
 export function * handleLatestNews() {
@@ -13,7 +12,7 @@ export function * handleLatestNews() {
     const { hits } = yield call( getLatestNews, 'react' )
     yield put( setLatestNews( hits ) )
   } catch {
-    yield put( setLatestNewsError( 'Error fetching latest news!!!___+++===!!!' ) )
+    yield put( setLatestNewsError( 'Error fetching latest news!' ) )
     // yield put({ type: SET_LATEST_NEWS_ERROR, payload: 'Error fetching latest news' });
   }
 }
@@ -23,21 +22,47 @@ export function * handlePopularNews() {
     const { hits } = yield call( getPopularNews )
     yield put( setPopularNews( hits ) )
   } catch {
-    yield put( { type: SET_POPULAR_NEWS_ERROR, payload: 'Error fetching popular news' } )
+    yield put( setPopularNewsError( 'Error fetching popular news' ) )
   }
 }
 
-export function * watchPopularSaga() {
-  yield takeEvery( GET_POPULAR_NEWS, handlePopularNews )
+export function * watchNewsSaga() {
+  yield put( { type: SET_LOADING_DATA, payload: true } )
+  const path = yield select( ( { router } ) => router.location.pathname )
+  if( path === '/popular-news' ) {
+    yield call( handlePopularNews )
+  }
+  if( path === '/latest-news' ) {
+    yield call( handleLatestNews )
+  }
+  yield put( { type: SET_LOADING_DATA, payload: false } )
 }
 
-export function * watchLatestSaga() {
-  yield takeEvery( GET_LATEST_NEWS, handleLatestNews )
+
+export default function * rootSaga() {
+  yield takeEvery( ROUTER_ON_LOCATION_CHANGED, watchNewsSaga )
 }
 
-export default function* rootSaga() {
-  yield all( [
-    spawn( watchPopularSaga ),
-    spawn( watchLatestSaga ),
-  ] )
-}
+// неблокирующие эффекты fork, spawn
+
+// join() блокирует дальнейшее исполнение пока не будет получит заданный результат
+
+// задержка и блокировка выполнения кода до своего выполнения
+// yield delay(2000);  console.log(' Something ')
+
+// предотвращение многочисленных вызовов saga
+// yield throttle(5000, LOCATION_CHANGED, () => console.log(' Something ') )
+
+// retry автоматический перезапуск sag в фоновом режиме
+// export default function* error(){
+//   console.log('!!!')
+//   throw new Error('Test Error')}
+// export default function * rootSaga() {
+//   yield retry(5, 2000, error)  // перезапуск 5 раз каждые 2 сек
+//   yield takeEvery( ROUTER_ON_LOCATION_CHANGED, watchNewsSaga )
+// }
+
+// call, apply разница в передаче аргументов call( getLatestNews, 'react' ) или apply( getLatestNews, [react,] )
+
+// cancel - отмена запуска процесса
+// if(true) cancel(getPopularNews)
